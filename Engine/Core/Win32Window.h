@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <string>
-
 #include "Windows.h"
 
 namespace Craft
@@ -14,6 +13,11 @@ namespace Craft
     public:
         Win32Window(uint32_t width = 1280, uint32_t height = 800, IMessageHandler* messageHandler = nullptr, const std::wstring title = L"Craft Render Engine");
         ~Win32Window();
+        
+    public:
+        inline uint32_t GetWidth() const { return width; }
+        inline uint32_t GetHeight() const { return height; }
+        inline HWND GetHandle() const { return handle; }
         
     private:
         // 창 메시지 처리 함수

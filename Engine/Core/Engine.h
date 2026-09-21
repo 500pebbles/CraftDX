@@ -7,6 +7,7 @@
 namespace Craft
 {
     class Win32Window;
+    class Renderer;
     
     class Engine : public IMessageHandler
     {
@@ -19,11 +20,14 @@ namespace Craft
         void Quit();
         
     protected:
+        void Draw();
+        
+    protected:
         virtual LRESULT HandleMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam) override;
 
         
     protected:
         std::unique_ptr<Win32Window> window;    
-    };
-
+        std::unique_ptr<Renderer> renderer;
+    };    
 }

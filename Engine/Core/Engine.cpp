@@ -1,6 +1,8 @@
 ﻿#include "Engine.h"
 
 #include "Win32Window.h"
+#include "Graphics/Renderer.h"
+#include <iostream>
 
 namespace Craft
 {
@@ -8,6 +10,9 @@ namespace Craft
     {
         // 창 객체 생성
         window = std::make_unique<Win32Window>(width, height, this,title);
+        
+        // 렌더러 객체 생성
+        renderer = std::make_unique<Renderer>(*window);
     }
 
     Engine::~Engine()
@@ -16,6 +21,20 @@ namespace Craft
 
     void Engine::Run()
     {
+        LARGE_INTEGER frequency;
+        QueryPerformanceFrequency(&frequency);        
+        auto GetDeltaTime = [&frequency](int64_t& current, int64_t& previous)
+        {
+            LARGE_INTEGER counter;
+            QueryPerformanceCounter(&counter);
+            current = counter.QuadPart;
+            
+            return static_cast<float>(current - previous) / static_cast<float>(frequency.QuadPart);
+        };
+        
+        int64_t current = 0;
+        int64_t previous = 0;
+        
         // 이벤트(창 메시지) 처리 루프
         MSG message = {};
         while (message.message != WM_QUIT)
@@ -29,13 +48,30 @@ namespace Craft
             // 엔진 루프
             else
             {
-            
+                // 프레임 시간 구하기   
+                float deltaTime = GetDeltaTime(current, previous);
+                
+                // 대기 시간 계산
+                
+#if _DEBUG
+                std::cout << "deltaTime: " << deltaTime
+                << "| FPS: " << (1.f / deltaTime) << '\n';
+#endif
+                
+                
+                Draw();
+                previous = current;
             }
         }
     }
 
     void Engine::Quit()
     {
+    }
+
+    void Engine::Draw()
+    {
+        if (renderer) renderer->Draw(0.6f, 0.7f, 0.8f, 0);
     }
 
     LRESULT Engine::HandleMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)

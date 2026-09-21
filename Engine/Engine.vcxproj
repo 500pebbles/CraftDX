@@ -124,10 +124,14 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>winmm.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
+    <PreBuildEvent>
+      <Command>xcopy HLSLShaders\*.hlsl $(OutDir)\HLSLShaders\ /e /y /i</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -143,22 +147,53 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>winmm.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
+    <PreBuildEvent>
+      <Command>xcopy HLSLShaders\*.hlsl $(OutDir)\HLSLShaders\ /e /y /i</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\Engine.cpp" />
     <ClCompile Include="Core\Win32Window.cpp" />
+    <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="LaunchApplication.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Core.h" />
     <ClInclude Include="Core\Engine.h" />
     <ClInclude Include="Core\Win32Window.h" />
+    <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Interface\IMessageHandler.h" />
     <ClInclude Include="LaunchApplication.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSLShaders\DefaultPS.hlsl">
+      <ObjectFileOutput>C:\Workspace\CraftDX\Bin\Debug\%(Filename).cso</ObjectFileOutput>
+      <TrackerLogDirectory>C:\Workspace\CraftDX\Intermediate\Debug\Engine\Engine.tlog\</TrackerLogDirectory>
+      <EntryPointName>main</EntryPointName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShaderModel>4.0_level_9_3</ShaderModel>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="HLSLShaders\DefaultVS.hlsl">
+      <ObjectFileOutput>C:\Workspace\CraftDX\Bin\Debug\%(Filename).cso</ObjectFileOutput>
+      <TrackerLogDirectory>C:\Workspace\CraftDX\Intermediate\Debug\Engine\Engine.tlog\</TrackerLogDirectory>
+      <EntryPointName>main</EntryPointName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShaderModel>4.0_level_9_3</ShaderModel>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
