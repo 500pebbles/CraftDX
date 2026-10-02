@@ -15,6 +15,9 @@ namespace Craft
         ~Win32Window();
         
     public:
+        void OnResize(uint32_t width, uint32_t height);
+        
+    public:
         inline uint32_t GetWidth() const { return width; }
         inline uint32_t GetHeight() const { return height; }
         inline HWND GetHandle() const { return handle; }

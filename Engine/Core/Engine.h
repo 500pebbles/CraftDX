@@ -21,12 +21,13 @@ namespace Craft
         
     protected:
         void Draw();
+        void OnResize(uint32_t width, uint32_t height); // 창 크기 변경 이벤트 함수
         
     protected:
         virtual LRESULT HandleMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam) override;
 
         
-    protected:
+    protected: 
         std::unique_ptr<Win32Window> window;    
         std::unique_ptr<Renderer> renderer;
     };    

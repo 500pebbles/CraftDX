@@ -21,19 +21,25 @@ namespace Craft
 
     void Engine::Run()
     {
+        // 프레임 제한 셋업
         LARGE_INTEGER frequency;
-        QueryPerformanceFrequency(&frequency);        
+        QueryPerformanceFrequency(&frequency);
         auto GetDeltaTime = [&frequency](int64_t& current, int64_t& previous)
         {
             LARGE_INTEGER counter;
             QueryPerformanceCounter(&counter);
             current = counter.QuadPart;
-            
+
             return static_cast<float>(current - previous) / static_cast<float>(frequency.QuadPart);
         };
         
         int64_t current = 0;
         int64_t previous = 0;
+        
+        const float framerate = 120.0f;
+        const float oneFrameTime = 1.0f / framerate;
+
+        timeBeginPeriod(1);
         
         // 이벤트(창 메시지) 처리 루프
         MSG message = {};
@@ -48,10 +54,22 @@ namespace Craft
             // 엔진 루프
             else
             {
-                // 프레임 시간 구하기   
+                // 프레임 제한
                 float deltaTime = GetDeltaTime(current, previous);
-                
-                // 대기 시간 계산
+                float remainingTime = oneFrameTime - deltaTime;
+
+                while (remainingTime >= 0.002f)
+                {
+                    Sleep(1);
+                    deltaTime = GetDeltaTime(current, previous);
+                    remainingTime = oneFrameTime - deltaTime;
+                }
+
+                while (remainingTime > 0.0f)
+                {
+                    deltaTime = GetDeltaTime(current, previous);
+                    remainingTime = oneFrameTime - deltaTime;
+                }
                 
 #if _DEBUG
                 std::cout << "deltaTime: " << deltaTime
@@ -63,6 +81,10 @@ namespace Craft
                 previous = current;
             }
         }
+        
+        // 스레드 간격 원상 복구.
+        timeEndPeriod(1);
+
     }
 
     void Engine::Quit()
@@ -72,6 +94,18 @@ namespace Craft
     void Engine::Draw()
     {
         if (renderer) renderer->Draw(0.6f, 0.7f, 0.8f, 0);
+    }
+
+    void Engine::OnResize(uint32_t width, uint32_t height)
+    {
+        if (renderer)
+        {
+            renderer->OnResize(width, height);
+        }
+        if (window)
+        {
+            window->OnResize(width, height);
+        }
     }
 
     LRESULT Engine::HandleMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
@@ -103,6 +137,17 @@ namespace Craft
                 FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
                 EndPaint(window, &ps);
             }
+        return 0;
+            
+        case WM_SIZE:
+            {  
+                // 창크기가 변경될경우 변경된 너비/높이 구하기
+                uint32_t width = LOWORD(lParam);
+                uint32_t height = HIWORD(lParam);
+            
+                // 메시지 전파
+                OnResize(width, height);
+            }        
         return 0;
         }
     

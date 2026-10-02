@@ -12,6 +12,7 @@ namespace Craft
 		CreateRenderTargetView();
     	CreateDemoBuffers();
     	CreateDefaultShaders();
+    	CreateViewport(window.GetWidth(), window.GetHeight());
     }
 
     Renderer::~Renderer()
@@ -35,6 +36,29 @@ namespace Craft
     	BeginScene(red, green, blue);
     	DrawScene();
     	EndScene(vsync);
+    }
+
+    void Renderer::OnResize(uint32_t width, uint32_t height)
+    {
+    	// 기존 크기 확인
+    	DXGI_SWAP_CHAIN_DESC desc = {};
+    	swapChain->GetDesc(&desc);
+    	
+    	// 렌더 타겟 뷰 해제
+    	SafeRelease(renderTargetView);
+    	
+    	// 백버퍼 크기 변경 
+		ThrowIfFailed(swapChain->ResizeBuffers(
+			2, 
+			width,
+			height,
+			DXGI_FORMAT_UNKNOWN, 
+			0
+			), L"Failed to resize back buffer");
+    	
+    	CreateRenderTargetView();
+    	
+    	CreateViewport(width, height);
     }
 
     void Renderer::BeginScene(float red, float green, float blue)
@@ -62,15 +86,7 @@ namespace Craft
     	context->PSSetShader(pixelShader, nullptr, 0);
     	
     	// 뷰포트 설정
-    	D3D11_VIEWPORT viewport = {};
-    	viewport.TopLeftX = 0.0f;
-    	viewport.TopLeftY = 0.0f;
-    	viewport.Width = 1280.0f;
-    	viewport.Height = 800.0f;
-    	viewport.MinDepth = 0.0f;
-    	viewport.MaxDepth = 1.0f;
-
-    	context->RSSetViewports(1, &viewport);
+    	
     	
     	// 드로우 콜
     	context->DrawIndexed(3, 0, 0);
@@ -277,7 +293,7 @@ namespace Craft
 			nullptr
 		), L"Failed to compile pixel shader");
 
-    	// 픽셀 셰이더 객체 생성
+    	// 픽셀 셰이더 객체 생성 
     	ThrowIfFailed(
 			device->CreatePixelShader(
 				pixelShaderObject->GetBufferPointer(),
@@ -289,5 +305,32 @@ namespace Craft
     	// 사용한 리소스 해제
     	SafeRelease(vertexShaderObject);
     	SafeRelease(pixelShaderObject);
+    }
+
+    void Renderer::CreateViewport(uint32_t width, uint32_t height)
+    {
+    	// 뷰포트 설정
+    	viewport.TopLeftX = 0.0f;
+    	viewport.TopLeftY = 0.0f;
+    	viewport.Width = static_cast<float>(width);
+    	viewport.Height = static_cast<float>(height);
+    	viewport.MaxDepth = 1.0f;
+    	viewport.MinDepth = 0.0f;
+    	
+    	// 바인딩
+    	context->RSSetViewports(1, &viewport);
+    	
+    	
+    	// (WHAT'S THE STORY) MORNING GLORY ? 
+    	// Hello
+    	// Roll With It
+    	// Wonderwall
+    	// Don't Look Back In Anger
+    	// Bonehead's Bank Holiday
+    	// Cigarettes & Alcohol
+    	// Cast No Shadow
+    	// She's Electric
+    	// Morning Glory
+    	// Champagne Supernova
     }
 }
