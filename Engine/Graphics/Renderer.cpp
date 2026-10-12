@@ -7,16 +7,22 @@ namespace Craft
 {
     Renderer::Renderer(const Win32Window& window)
     {
+    	assert(!instance);
+    	instance = this;
+    	
         CreateDevices();		
     	CreateSwapChain(window);	
 		CreateRenderTargetView();
     	CreateDemoBuffers();
     	CreateDefaultShaders();
     	CreateViewport(window.GetWidth(), window.GetHeight());
+    	CreateTransformBuffer();
     }
 
     Renderer::~Renderer()
     {
+    	instance = nullptr;
+    	
     	// Resource 해제
     	SafeRelease(vertexBuffer);
     	SafeRelease(indexBuffer);
@@ -29,6 +35,9 @@ namespace Craft
     	SafeRelease(swapChain);
     	SafeRelease(context);	    
     	SafeRelease(device);
+    	
+    	// 상수버퍼
+    	SafeRelease(transformBuffer);
     }
 
     void Renderer::Draw(float red, float green, float blue, uint32_t vsync)
@@ -36,6 +45,14 @@ namespace Craft
     	BeginScene(red, green, blue);
     	DrawScene();
     	EndScene(vsync);
+    }
+
+    void Renderer::Submit(const Matrix4& worldMatrix)
+    {
+    	RenderCommand command;
+    	command.worldMatrix = worldMatrix;
+    	
+    	renderCommandList.emplace_back(command);
     }
 
     void Renderer::OnResize(uint32_t width, uint32_t height)
@@ -61,6 +78,12 @@ namespace Craft
     	CreateViewport(width, height);
     }
 
+    Renderer& Renderer::Get()
+    {
+    	assert(instance && "instance should not be null here.");
+    	return *instance;
+    }
+
     void Renderer::BeginScene(float red, float green, float blue)
     {
     	// 그리기 대상 설정
@@ -84,10 +107,22 @@ namespace Craft
     	// 셰이더 설정
     	context->VSSetShader(vertexShader, nullptr, 0);
     	context->PSSetShader(pixelShader, nullptr, 0);
+    	    	
+    	// 정점 셰이더에 상수 버퍼(트랜스폼 버퍼) 바인딩
+    	context->VSSetConstantBuffers(0, 1, &transformBuffer);    	
     	
-    	// 뷰포트 설정
-    	
-    	
+    	for (const RenderCommand& command : renderCommandList)
+    	{
+    		DrawCommand(command);
+    	}
+    	renderCommandList.clear();
+    }
+
+    void Renderer::DrawCommand(const RenderCommand& command)
+    {    	
+    	// 트랜스폼 데이터 업데이트
+    	UpdateTransformBuffer(command.worldMatrix);
+    	    	
     	// 드로우 콜
     	context->DrawIndexed(3, 0, 0);
     }
@@ -154,7 +189,7 @@ namespace Craft
     	swapChainDesc.Windowed = true;
     	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     	
-    	 result = factory->CreateSwapChain(device, &swapChainDesc, &swapChain);
+    	result = factory->CreateSwapChain(device, &swapChainDesc, &swapChain);
     	
     	if (FAILED(result))
     	{
@@ -321,16 +356,40 @@ namespace Craft
     	context->RSSetViewports(1, &viewport);
     	
     	
-    	// (WHAT'S THE STORY) MORNING GLORY ? 
-    	// Hello
-    	// Roll With It
-    	// Wonderwall
-    	// Don't Look Back In Anger
-    	// Bonehead's Bank Holiday
-    	// Cigarettes & Alcohol
-    	// Cast No Shadow
-    	// She's Electric
-    	// Morning Glory
-    	// Champagne Supernova
+    }
+
+    void Renderer::CreateTransformBuffer()
+    {
+    	// 버퍼 구성 정보
+    	D3D11_BUFFER_DESC vertexBufferDesc = {};
+    	vertexBufferDesc.ByteWidth = sizeof(Matrix4); 
+    	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC; 
+    	vertexBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    	
+    	D3D11_SUBRESOURCE_DATA vertexBufferData = {};
+    	vertexBufferData.pSysMem = Matrix4::Identity.Data();
+    	
+    	/* Step 3 : device가 버퍼 생성 */
+    	ThrowIfFailed(
+			device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &transformBuffer),
+			L"Failed to create transform buffer");
+    }
+
+    void Renderer::UpdateTransformBuffer(const Matrix4& worldMatrix)
+    {
+		// 버퍼와 연결할 리소스 생성
+    	D3D11_MAPPED_SUBRESOURCE mapped = {};
+    	
+    	// 버퍼와 연동
+    	ThrowIfFailed(
+    		context->Map(transformBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped),
+    		L"Failed to map transform buffer");
+    	
+    	// 업데이트 할 데이터 설정
+    	std::memcpy(mapped.pData, worldMatrix.Data(), sizeof(Matrix4));
+    	
+    	// 버퍼와 연동 해제 
+    	context->Unmap(transformBuffer, 0);
     }
 }

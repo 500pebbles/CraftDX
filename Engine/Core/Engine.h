@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 
+#include "GameFramework/Level.h"
 #include "Interface/IMessageHandler.h"
 
 namespace Craft
@@ -16,12 +17,17 @@ namespace Craft
         virtual ~Engine();        
         
     public:
+        static Engine& Get();
+        
+    public:
         void Run();
         void Quit();
         
     protected:
+        void BeginPlay();
+        void Tick(float deltaTime);
         void Draw();
-        void OnResize(uint32_t width, uint32_t height); // 창 크기 변경 이벤트 함수
+        void OnResize(uint32_t width, uint32_t height);
         
     protected:
         virtual LRESULT HandleMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam) override;
@@ -30,5 +36,21 @@ namespace Craft
     protected: 
         std::unique_ptr<Win32Window> window;    
         std::unique_ptr<Renderer> renderer;
+        std::shared_ptr<Level> mainLevel;
+        std::shared_ptr<Level> nextLevel;
+                
+    protected:
+        inline static Engine* instance = nullptr;
+    
+    protected:
+        bool isQuit = false;
+    
+        
+    public:
+        template<typename T, typename = std::enable_if<std::is_base_of<Level, T>::value>>
+        void AddNewLevel()
+        {
+            nextLevel = std::make_shared<T>();
+        }
     };    
 }

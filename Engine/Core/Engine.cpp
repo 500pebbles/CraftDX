@@ -8,15 +8,22 @@ namespace Craft
 {
     Engine::Engine(uint32_t width, uint32_t height, const std::wstring title)
     {
-        // 창 객체 생성
-        window = std::make_unique<Win32Window>(width, height, this,title);
+        assert(!instance);
+        instance = this;
         
-        // 렌더러 객체 생성
+        window = std::make_unique<Win32Window>(width, height, this,title);
         renderer = std::make_unique<Renderer>(*window);
     }
 
     Engine::~Engine()
     {
+        instance = nullptr;
+    }
+
+    Engine& Engine::Get()
+    {
+        assert(instance);
+        return *instance;
     }
 
     void Engine::Run()
@@ -43,7 +50,7 @@ namespace Craft
         
         // 이벤트(창 메시지) 처리 루프
         MSG message = {};
-        while (message.message != WM_QUIT)
+        while (!isQuit && message.message != WM_QUIT)
         {
             // 창에 메세지가 발생한 경우의 처리
             if (PeekMessage(&message,nullptr,0,0,PM_REMOVE))
@@ -58,26 +65,40 @@ namespace Craft
                 float deltaTime = GetDeltaTime(current, previous);
                 float remainingTime = oneFrameTime - deltaTime;
 
+                /*
                 while (remainingTime >= 0.002f)
                 {
                     Sleep(1);
                     deltaTime = GetDeltaTime(current, previous);
                     remainingTime = oneFrameTime - deltaTime;
                 }
-
+                */
+                
                 while (remainingTime > 0.0f)
                 {
                     deltaTime = GetDeltaTime(current, previous);
                     remainingTime = oneFrameTime - deltaTime;
                 }
                 
-#if _DEBUG
+                #if _DEBUG
                 std::cout << "deltaTime: " << deltaTime
                 << "| FPS: " << (1.f / deltaTime) << '\n';
-#endif
+                #endif
                 
-                
+                BeginPlay();
+                Tick(deltaTime);
                 Draw();
+               
+                if (nextLevel)
+                {
+                    if (mainLevel) mainLevel.reset();
+                    mainLevel = nextLevel;
+                    mainLevel->Initialized();
+                    nextLevel.reset();
+                }
+                
+                if (mainLevel) mainLevel->ProcessAddAndDestroyActors();
+                
                 previous = current;
             }
         }
@@ -89,10 +110,23 @@ namespace Craft
 
     void Engine::Quit()
     {
+        isQuit = true;
+    }
+
+    void Engine::BeginPlay()
+    {
+        if (mainLevel) mainLevel->BeginPlay();
+    }
+
+    void Engine::Tick(float deltaTime)
+    {
+        if (mainLevel) mainLevel->Tick(deltaTime);
     }
 
     void Engine::Draw()
     {
+        if (mainLevel) mainLevel->Draw();   // 실제 드로잉이 아닌 데이터 제출
+        
         if (renderer) renderer->Draw(0.6f, 0.7f, 0.8f, 0);
     }
 

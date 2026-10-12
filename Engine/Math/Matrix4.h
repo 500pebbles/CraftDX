@@ -38,7 +38,7 @@ namespace Craft
         friend Vector3 operator*(const Vector3& vector, const Matrix4& matrix);
         
     public:
-        static const Matrix4 Identity;
+        static const Matrix4 Identity; 
         
         
         

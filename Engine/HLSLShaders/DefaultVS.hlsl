@@ -1,9 +1,12 @@
+
+cbuffer TransformBuffer : register(b0)
+{
+	// world matrix.
+	row_major matrix world;
+};
+
 float4 main( float3 pos : POSITION ) : SV_POSITION
 {
-	return float4(pos, 1);
+	float4 worldPosition = mul(float4(pos, 1), world);
+	return worldPosition;
 }
-
-/*
- * 입력이 어떻게 생겼는지 따로 알려줘야한다. DirectX에서는 이를 Input Layout이라 말함
- * POSITION이 세멘틱에 해당하는데, 
- */

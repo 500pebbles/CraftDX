@@ -4,6 +4,9 @@
 #include <memory>
 #include <Core/Core.h>
 #include <cstdint>
+#include <vector>
+
+#include "Math/Matrix4.h"
 
 
 namespace Craft
@@ -13,6 +16,12 @@ namespace Craft
     // CPU에서 GPU로 명령을 전달
     class Renderer
     {
+        struct RenderCommand
+        {
+            // 월드 행렬.
+            Matrix4 worldMatrix = Matrix4::Identity;
+        };
+        
     public:
         Renderer(const Win32Window& window);
         ~Renderer();
@@ -20,22 +29,31 @@ namespace Craft
     public:
         void Draw(float red, float green, float blue, uint32_t vsync); // Draw함수
         
+        void Submit(const Matrix4& worldMatrix);
+        
         void OnResize(uint32_t width, uint32_t height);                // 크기 변경 이벤트 함수
+        
+        static Renderer& Get();     // 싱글톤 전역접근
         
     private:
         void BeginScene(float red, float green, float blue);    // 그리기 준비
         void DrawScene();                                       // 드로우콜 발생
+        void DrawCommand(const RenderCommand& command);         // 렌더 목록 처리
         void EndScene(uint32_t vsync);                          // 그리기 정리(버퍼 교환)
         
-    private:
-        
+    private:        
         void CreateDevices();                                    // 장치 생성              
         void CreateSwapChain(const Win32Window& window);         // 스왑체인 생성                 
         void CreateRenderTargetView();                           // 렌더 타겟 뷰 생성
         void CreateDemoBuffers();                                // 데모 버퍼 생성
         void CreateDefaultShaders();                             // 셰이더 생성
         void CreateViewport(uint32_t width, uint32_t height);    // 뷰포트 생성
+        void CreateTransformBuffer();                            // 트랜스폼 상수버퍼 생성
         
+        void UpdateTransformBuffer(const Matrix4& worldMatrix);
+    private:
+        /* 전역접근 */
+        inline static Renderer* instance = nullptr;
     private:
         /* 그래픽카드 장치 제어 */
      
@@ -62,8 +80,14 @@ namespace Craft
         ID3D11PixelShader* pixelShader = nullptr;
         
         ID3D11InputLayout* inputLayout = nullptr;
+                
+        // 상수버퍼
+        ID3D11Buffer* transformBuffer = nullptr;
         
         // 뷰포트
         D3D11_VIEWPORT viewport = {};
+        
+        // 렌더 명령 목록
+        std::vector<RenderCommand> renderCommandList;
     };
 }

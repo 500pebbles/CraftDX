@@ -31,7 +31,8 @@ namespace Craft
         std::swap(m.m12, m.m21);
         std::swap(m.m13, m.m22);
         std::swap(m.m23, m.m32);
-        return Matrix4();
+        
+        return m;
     }
 
     Matrix4 Matrix4::InverseRotation(const Matrix4& matrix)
@@ -104,12 +105,12 @@ namespace Craft
 
     Matrix4 Matrix4::Rotation(float x, float y, float z)
     {
-        return Rotation(x) * Rotation(y) * Rotation(z);
+        return RotationX(x) * RotationY(y) * RotationZ(z);
     }
 
     Matrix4 Matrix4::Rotation(const Vector3& rotation)
     {
-        return Rotation(rotation.x) * Rotation(rotation.y) * Rotation(rotation.z);
+        return Rotation(rotation.x, rotation.y, rotation.z);
     }
 
     Matrix4 Matrix4::Translation(float x, float y, float z)
