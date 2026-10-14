@@ -2,6 +2,7 @@
 #include "Core/Win32Window.h"
 #include "cstdint"
 #include "d3dcompiler.h"
+#include "StaticMesh.h"
 
 namespace Craft
 {
@@ -13,7 +14,6 @@ namespace Craft
         CreateDevices();		
     	CreateSwapChain(window);	
 		CreateRenderTargetView();
-    	CreateDemoBuffers();
     	CreateDefaultShaders();
     	CreateViewport(window.GetWidth(), window.GetHeight());
     	CreateTransformBuffer();
@@ -24,8 +24,6 @@ namespace Craft
     	instance = nullptr;
     	
     	// Resource 해제
-    	SafeRelease(vertexBuffer);
-    	SafeRelease(indexBuffer);
     	SafeRelease(vertexShader);
     	SafeRelease(pixelShader);
     	SafeRelease(inputLayout);
@@ -47,10 +45,11 @@ namespace Craft
     	EndScene(vsync);
     }
 
-    void Renderer::Submit(const Matrix4& worldMatrix)
+    void Renderer::Submit(const std::shared_ptr<StaticMesh>& mesh, const Matrix4& worldMatrix)
     {
     	RenderCommand command;
     	command.worldMatrix = worldMatrix;
+    	command.mesh = mesh;
     	
     	renderCommandList.emplace_back(command);
     }
@@ -95,16 +94,9 @@ namespace Craft
     }
 
     void Renderer::DrawScene()
-    {
-    	// 입력 설정 - 리소스 바인딩
-    	uint32_t stride = sizeof(float) * 3;
-    	uint32_t offset = 0;
-    	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-    	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-    	context->IASetInputLayout(inputLayout);
-    	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    	
+    {    	
     	// 셰이더 설정
+    	context->IASetInputLayout(inputLayout);
     	context->VSSetShader(vertexShader, nullptr, 0);
     	context->PSSetShader(pixelShader, nullptr, 0);
     	    	
@@ -119,12 +111,18 @@ namespace Craft
     }
 
     void Renderer::DrawCommand(const RenderCommand& command)
-    {    	
+    {   
+    	if (!command.mesh) return;
+    	
+    	command.mesh->Bind();
+    	
     	// 트랜스폼 데이터 업데이트
     	UpdateTransformBuffer(command.worldMatrix);
+    	
+    	
     	    	
     	// 드로우 콜
-    	context->DrawIndexed(3, 0, 0);
+    	context->DrawIndexed(command.mesh->GetIndexCount(), 0, 0);
     }
 
     void Renderer::EndScene(uint32_t vsync)
@@ -220,56 +218,6 @@ namespace Craft
     	SafeRelease(backBuffer);
     }
 
-    void Renderer::CreateDemoBuffers()
-    {
-    	// 참고 : 이게 스태틱 메쉬임
-    	
-    	/* Step 1 : 삼각형을 이루는 원시데이터 준비 */
-    	struct Vector3
-    	{
-    		float x, y, z = 0.f;
-    	};
-    	
-    	Vector3 vertices[] = 
-    	{
-    		// 좌표계 기준은 Normalized Display Coordinates
-    		// 인덱스 순서에따라 내적 결과 바라보는 방향이 카메라
-    		Vector3 { 0.0f, 0.5f, 0.5f },
-    		Vector3 { 0.5f, -0.5f, 0.5f },
-    		Vector3 { -0.5f, -0.5f, 0.5f }
-    	};
-    	
-    	/* Step 2 : 원시데이터를 GPU가 읽을수 있도록 버퍼로 포장해서 전달 */
-    	D3D11_BUFFER_DESC vertexBufferDesc = {};
-    	vertexBufferDesc.ByteWidth = sizeof(Vector3) * 3; 
-    	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT; 
-    	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    	
-    	D3D11_SUBRESOURCE_DATA vertexBufferData = {};	
-    	vertexBufferData.pSysMem = vertices;
-    	
-    	/* Step 3 : device가 버퍼 생성 */
-    	ThrowIfFailed(
-    		device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer),
-    		L"Failed to create vertex buffer");
-    	
-    	/* Step 1 : 인덱스를 이루는 원시데이터 준비 */
-    	uint32_t indices[] = { 0, 1, 2};
-    	
-    	/* Step 2 : 원시데이터를 GPU가 읽을수 있도록 버퍼로 포장해서 전달 */
-    	D3D11_BUFFER_DESC indexBufferDesc = {};
-    	indexBufferDesc.ByteWidth = sizeof(uint32_t) * 3; 
-    	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT; 
-    	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    	
-    	D3D11_SUBRESOURCE_DATA indexBufferData = {};	
-    	indexBufferData.pSysMem = indices;
-    	
-    	/* Step 3 : device가 버퍼 생성 */
-    	ThrowIfFailed(
-			device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer),
-			L"Failed to create vertex buffer");
-    }
 
     void Renderer::CreateDefaultShaders()
     {

@@ -18,7 +18,7 @@ namespace Craft
         Vector3 Right() const;
         Vector3 Up() const;
         Vector3 Forward() const;
-        
+
         const Matrix4& GetWorldMatrix() const { return worldMatrix; }
     
     public:
