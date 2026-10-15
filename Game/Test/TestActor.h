@@ -4,6 +4,7 @@
 
 namespace Craft
 {
+    class Shader;
     class StaticMesh;
 };
 
@@ -15,9 +16,12 @@ public:
     virtual void Draw() override;
     
 public:
-    void SetStaticMesh(const std::shared_ptr<Craft::StaticMesh>& newMesh) { staticMesh = newMesh; };
+    inline void SetStaticMesh(const std::shared_ptr<Craft::StaticMesh>& newMesh) { staticMesh = newMesh; }
+    
+    inline void SetShader(const std::shared_ptr<Craft::Shader>& newShader) { shader = newShader; }
     
 private:
     std::shared_ptr<Craft::StaticMesh> staticMesh;
     
+    std::shared_ptr<Craft::Shader> shader;
 };

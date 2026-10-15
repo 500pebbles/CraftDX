@@ -1,5 +1,6 @@
 ﻿#include "TestLevel.h"
 #include "TestActor.h"
+#include "Graphics/Shader.h"
 #include "Graphics/StaticMesh.h"
 
 using namespace Craft;
@@ -12,20 +13,25 @@ void TestLevel::Initialized()
     auto triangle = StaticMesh::CreateTriangleMesh();
     auto quad = StaticMesh::CreateQuadMesh();
     
+    // Create Shader.
+    auto shader = Shader::CreateDefaultShader();
+    
     // Create Actors.
     auto left = SpawnActor<TestActor>();
     left->GetTransform().scale = Vector3::One * 0.4f;
     left->GetTransform().position.x = -0.5f;
     left->SetStaticMesh(quad);
+    left->SetShader(shader);
     
     auto center = SpawnActor<TestActor>();
     center->GetTransform().scale = Vector3::One * 0.4f;
     center->GetTransform().position.x = 0.f;
     center->SetStaticMesh(quad); 
+    center->SetShader(shader);
 
     auto right = SpawnActor<TestActor>();
     right->GetTransform().scale = Vector3::One * 0.4f;
     right->GetTransform().position.x = 0.5f;
     right->SetStaticMesh(triangle);
+    right->SetShader(shader);
 }
-

@@ -13,5 +13,5 @@ void TestActor::Draw()
 {
     Actor::Draw();
     Craft::Transform& transform = GetTransform();
-    Craft::Renderer::Get().Submit(staticMesh, transform.GetWorldMatrix());
+    Craft::Renderer::Get().Submit(staticMesh, shader, transform.GetWorldMatrix());
 }

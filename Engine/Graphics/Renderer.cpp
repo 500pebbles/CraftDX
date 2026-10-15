@@ -2,6 +2,7 @@
 #include "Core/Win32Window.h"
 #include "cstdint"
 #include "d3dcompiler.h"
+#include "Shader.h"
 #include "StaticMesh.h"
 
 namespace Craft
@@ -14,7 +15,6 @@ namespace Craft
         CreateDevices();		
     	CreateSwapChain(window);	
 		CreateRenderTargetView();
-    	CreateDefaultShaders();
     	CreateViewport(window.GetWidth(), window.GetHeight());
     	CreateTransformBuffer();
     }
@@ -22,11 +22,6 @@ namespace Craft
     Renderer::~Renderer()
     {
     	instance = nullptr;
-    	
-    	// Resource 해제
-    	SafeRelease(vertexShader);
-    	SafeRelease(pixelShader);
-    	SafeRelease(inputLayout);
     	
     	// Device 해제
     	SafeRelease(renderTargetView);
@@ -45,11 +40,12 @@ namespace Craft
     	EndScene(vsync);
     }
 
-    void Renderer::Submit(const std::shared_ptr<StaticMesh>& mesh, const Matrix4& worldMatrix)
+    void Renderer::Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const Matrix4& worldMatrix)
     {
     	RenderCommand command;
     	command.worldMatrix = worldMatrix;
     	command.mesh = mesh;
+    	command.shader = shader;
     	
     	renderCommandList.emplace_back(command);
     }
@@ -94,13 +90,7 @@ namespace Craft
     }
 
     void Renderer::DrawScene()
-    {    	
-    	// 셰이더 설정
-    	context->IASetInputLayout(inputLayout);
-    	context->VSSetShader(vertexShader, nullptr, 0);
-    	context->PSSetShader(pixelShader, nullptr, 0);
-    	    	
-    	// 정점 셰이더에 상수 버퍼(트랜스폼 버퍼) 바인딩
+    {
     	context->VSSetConstantBuffers(0, 1, &transformBuffer);    	
     	
     	for (const RenderCommand& command : renderCommandList)
@@ -112,16 +102,13 @@ namespace Craft
 
     void Renderer::DrawCommand(const RenderCommand& command)
     {   
-    	if (!command.mesh) return;
+    	if (!command.mesh || !command.shader) return;
     	
     	command.mesh->Bind();
+    	command.shader->Bind();
     	
-    	// 트랜스폼 데이터 업데이트
     	UpdateTransformBuffer(command.worldMatrix);
     	
-    	
-    	    	
-    	// 드로우 콜
     	context->DrawIndexed(command.mesh->GetIndexCount(), 0, 0);
     }
 
@@ -216,78 +203,6 @@ namespace Craft
     	
     	// 사용후 메모리 해제
     	SafeRelease(backBuffer);
-    }
-
-
-    void Renderer::CreateDefaultShaders()
-    {
-    	// 셰이더 컴파일 결과 저장용 객체
-    	ID3DBlob* vertexShaderObject = nullptr;
-
-    	// 셰이더(Shader) 컴파일
-    	ThrowIfFailed(D3DCompileFromFile(
-			L"HLSLShaders/DefaultVS.hlsl",
-			nullptr,
-			nullptr,
-			"main",
-			"vs_5_0",
-			0,
-			0,
-			&vertexShaderObject,
-			nullptr
-		), L"Failed to compile vertex shader");
-
-    	// 정점 셰이더 객체 생성
-    	ThrowIfFailed(
-			device->CreateVertexShader(
-				vertexShaderObject->GetBufferPointer(),
-				vertexShaderObject->GetBufferSize(),
-				nullptr,
-				&vertexShader
-			), L"Failed to create vertex shader");
-
-    	// 정점 셰이더 입력 관련 정보 객체 생성
-    	D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[] =
-    	{
-    		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    	};
-
-    	ThrowIfFailed(device->CreateInputLayout(
-			inputLayoutDesc,
-			_countof(inputLayoutDesc),
-			vertexShaderObject->GetBufferPointer(),
-			vertexShaderObject->GetBufferSize(),
-			&inputLayout), L"failed to create input layout");
-
-
-    	// 픽셀 셰이더 컴파일 결과 저장용 객체
-    	ID3DBlob* pixelShaderObject = nullptr;
-	
-    	// 픽셀 셰이더
-    	ThrowIfFailed(D3DCompileFromFile(
-			L"HLSLShaders/DefaultPS.hlsl",
-			nullptr,
-			nullptr,
-			"main",
-			"ps_5_0",
-			0,
-			0,
-			&pixelShaderObject,
-			nullptr
-		), L"Failed to compile pixel shader");
-
-    	// 픽셀 셰이더 객체 생성 
-    	ThrowIfFailed(
-			device->CreatePixelShader(
-				pixelShaderObject->GetBufferPointer(),
-				pixelShaderObject->GetBufferSize(),
-				nullptr,
-				&pixelShader
-			), L"Failed to create pixel shader");
-
-    	// 사용한 리소스 해제
-    	SafeRelease(vertexShaderObject);
-    	SafeRelease(pixelShaderObject);
     }
 
     void Renderer::CreateViewport(uint32_t width, uint32_t height)
