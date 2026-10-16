@@ -55,6 +55,7 @@ namespace Craft
         void CreateTransformBuffer();                            // 트랜스폼 상수버퍼 생성
         
         void UpdateTransformBuffer(const Matrix4& worldMatrix);
+        
     private:
         /* 전역접근 */
         inline static Renderer* instance = nullptr;

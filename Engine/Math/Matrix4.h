@@ -9,7 +9,7 @@ namespace Craft
     public:
         Matrix4();
         Matrix4(const Matrix4& other);
-        ~Matrix4() = default;        
+        ~Matrix4() = default;
         
     public:
         static Matrix4 Transpose(const Matrix4& matrix); // 전치 함수(행<->열 전환)
@@ -27,6 +27,8 @@ namespace Craft
         static Matrix4 Translation(float x, float y, float z);
         static Matrix4 Translation(const Vector3& translation);
         
+        static Matrix4 LookAt(const Vector3& eye, const Vector3& target, const Vector3& upVector);
+        
     public:
         const float* Data() const { return elements; }
         
@@ -38,9 +40,7 @@ namespace Craft
         friend Vector3 operator*(const Vector3& vector, const Matrix4& matrix);
         
     public:
-        static const Matrix4 Identity; 
-        
-        
+        static const Matrix4 Identity;                 
         
     private:
         /* 공용체에서 메모리를 확보하는 공식

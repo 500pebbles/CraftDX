@@ -129,6 +129,37 @@ namespace Craft
         return Translation(translation.x, translation.y, translation.z);
     }
 
+    Matrix4 Matrix4::LookAt(const Vector3& eye, const Vector3& target, const Vector3& upVector)
+    {
+        Matrix4 m;
+        
+        // Setup Forward, Right, Up Vectors.
+        Vector3 forward = target - eye;
+        assert(forward.Length() > KindaSmallNumber);
+        forward = forward.Normalized();
+        
+        Vector3 right = upVector.Normalized().Cross(forward);
+        assert(right.Length() > KindaSmallNumber);
+        right = right.Normalized();
+        
+        Vector3 up = forward.Cross(right);
+        up = right.Normalized();
+        
+        // Setup Location values.
+        float x = -eye.Dot(right);
+        float y = -eye.Dot(up);
+        float z = -eye.Dot(forward);
+        
+        // View Matrix. 
+        m.m00 = right.x;   m.m01 = up.x;   m.m02 = forward.x;   m.m03 = 0.0f;
+        m.m10 = right.y;   m.m11 = up.y;   m.m12 = forward.y;   m.m13 = 0.0f;
+        m.m20 = right.z;   m.m21 = up.z;   m.m22 = forward.z;   m.m23 = 0.0f;
+        m.m20 = right.z;   m.m21 = up.z;   m.m22 = forward.z;   m.m23 = 0.0f;
+        m.m30 = x;         m.m31 = y;      m.m32 = z;           m.m33 = 1.0f;
+        
+        return m;
+    }
+
     Matrix4& Matrix4::operator=(const Matrix4& other)
     {
         memcpy(elements, other.elements, sizeof(elements));
