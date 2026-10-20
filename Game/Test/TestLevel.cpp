@@ -42,7 +42,7 @@ void TestLevel::Draw()
 {
     Level::Draw();
     
-    Vector3 eye (10.f, 0.f, 0.f);
+    Vector3 eye (0.f, 0.f, 0.f);
     Vector3 target = eye + Vector3::Forward;
     Vector3 up = Vector3::Up;
     const Matrix4 view = Matrix4::LookAt(eye, target, up);

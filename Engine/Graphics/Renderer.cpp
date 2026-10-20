@@ -294,7 +294,7 @@ namespace Craft
 			L"Failed to map camera buffer");
     	
     	// 업데이트 할 데이터 설정
-    	std::memcpy(mapped.pData, &cameraData, sizeof(cameraBuffer));
+    	std::memcpy(mapped.pData, &cameraData, sizeof(CameraBufferData));
     	
     	// 버퍼와 연동 해제 
     	context->Unmap(cameraBuffer, 0);

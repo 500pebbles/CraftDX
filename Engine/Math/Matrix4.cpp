@@ -142,8 +142,7 @@ namespace Craft
         assert(right.Length() > KindaSmallNumber);
         right = right.Normalized();
         
-        Vector3 up = forward.Cross(right);
-        up = right.Normalized();
+        Vector3 up = forward.Cross(right).Normalized();
         
         // Setup Location values.
         float x = -eye.Dot(right);
