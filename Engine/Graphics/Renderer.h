@@ -25,6 +25,11 @@ namespace Craft
             std::shared_ptr<Shader> shader;
         };
         
+        struct CameraBufferData
+        {
+            Matrix4 viewMatrix = Matrix4::Identity;
+        };
+        
     public:
         Renderer(const Win32Window& window);
         ~Renderer();
@@ -33,6 +38,8 @@ namespace Craft
         void Draw(float red, float green, float blue, uint32_t vsync); // Draw함수
         
         void Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const Matrix4& worldMatrix);
+        
+        void SubmitCamera(const Matrix4& viewMatrix);
         
         void OnResize(uint32_t width, uint32_t height);                // 크기 변경 이벤트 함수
         
@@ -52,9 +59,13 @@ namespace Craft
         void CreateSwapChain(const Win32Window& window);         // 스왑체인 생성                 
         void CreateRenderTargetView();                           // 렌더 타겟 뷰 생성
         void CreateViewport(uint32_t width, uint32_t height);    // 뷰포트 생성
-        void CreateTransformBuffer();                            // 트랜스폼 상수버퍼 생성
-        
+    
+        void CreateTransformBuffer();                            // 트랜스폼 상수버퍼 생성        
         void UpdateTransformBuffer(const Matrix4& worldMatrix);
+        
+        void CreateCameraBuffer();
+        void UpdateCameraBuffer();
+    
         
     private:
         /* 전역접근 */
@@ -74,13 +85,14 @@ namespace Craft
         // 백버퍼를 대표하는 렌더 타겟 -> 그래픽카드에 그릴 대상을 선정함 (DX에서 View라는 개념은 메모리에 그릴 대상을 뜻함)
         ID3D11RenderTargetView* renderTargetView = nullptr;
                 
-        // 상수버퍼
         ID3D11Buffer* transformBuffer = nullptr;
         
-        // 뷰포트
+        CameraBufferData cameraData;
+        
+        ID3D11Buffer* cameraBuffer = nullptr; 
+        
         D3D11_VIEWPORT viewport = {};
         
-        // 렌더 명령 목록
         std::vector<RenderCommand> renderCommandList;
     };
 }
