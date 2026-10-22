@@ -1,7 +1,7 @@
 ﻿#include "TestLevel.h"
 #include "TestActor.h"
+#include "Component/CameraComponent.h"
 #include "Component/StaticMeshComponent.h"
-#include "Graphics/Renderer.h"
 #include "Graphics/Shader.h"
 #include "Graphics/StaticMesh.h"
 
@@ -36,16 +36,9 @@ void TestLevel::Initialized()
     right->GetTransform().position.x = 0.5f;
     right->GetComponent<StaticMeshComponent>()->SetStaticMesh(quad);
     right->GetComponent<StaticMeshComponent>()->SetShader(shader);
-}
-
-void TestLevel::Draw()
-{
-    Level::Draw();
     
-    Vector3 eye (0.f, 0.f, 0.f);
-    Vector3 target = eye + Vector3::Forward;
-    Vector3 up = Vector3::Up;
-    const Matrix4 view = Matrix4::LookAt(eye, target, up);
-    
-    Renderer::Get().SubmitCamera(view);
+    // 카메라 컴포넌트를 생성하고, (그냥 액터 타입) 컴포넌트를 부착함.
+    auto camera = SpawnActor<Actor>();
+    camera->AddComponent<CameraComponent>();
+    camera->GetTransform().position.z = -3.f;
 }

@@ -2,6 +2,7 @@
 cbuffer TransformBuffer : register(b0)
 {
 	row_major matrix world;
+	row_major matrix projection;
 }
 
 cbuffer CameraBuffer : register(b1)
@@ -13,5 +14,7 @@ float4 main( float3 pos : POSITION ) : SV_POSITION
 {
 	float4 worldPosition = mul(float4(pos, 1), world);
 	float4 viewPosition = mul(worldPosition, view);
-	return viewPosition;
+	float4 clipPosition = mul(viewPosition, projection);
+	
+	return clipPosition;
 }

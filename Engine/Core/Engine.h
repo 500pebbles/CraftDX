@@ -29,6 +29,10 @@ namespace Craft
         void Draw();
         void OnResize(uint32_t width, uint32_t height);
         
+    public:        
+        uint32_t GetClientWidth() const;
+        uint32_t GetClientHeight() const;
+        
     protected:
         virtual LRESULT HandleMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam) override;
 
@@ -52,5 +56,6 @@ namespace Craft
         {
             nextLevel = std::make_shared<T>();
         }
+        
     };    
 }

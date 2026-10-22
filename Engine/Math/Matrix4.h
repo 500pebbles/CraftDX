@@ -28,8 +28,11 @@ namespace Craft
         static Matrix4 Translation(const Vector3& translation);
         
         static Matrix4 LookAt(const Vector3& eye, const Vector3& target, const Vector3& upVector);
+        static Matrix4 Perspective(float fieldOfView, float width, float height, float nearDistance, float farDistance);
         
     public:
+        static Matrix4 InverseTranslationRotation(const Vector3& position, const Vector3& rotation);
+        
         const float* Data() const { return elements; }
         
     public:        

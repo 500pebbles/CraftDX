@@ -48,12 +48,15 @@ namespace Craft
     	command.mesh = mesh;
     	command.shader = shader;
     	
+    	// 여기에 최종적으로 카메라를 곱해서 만들어야함
+    	
     	renderCommandList.emplace_back(command);
     }
 
-    void Renderer::SubmitCamera(const Matrix4& viewMatrix)
+    void Renderer::SubmitCamera(const Matrix4& viewMatrix, const Matrix4& projectionMatrix)
     {
     	cameraData.viewMatrix = viewMatrix;
+    	cameraData.projectionMatrix = projectionMatrix;
     }
 
     void Renderer::OnResize(uint32_t width, uint32_t height)
@@ -225,9 +228,7 @@ namespace Craft
     	viewport.MinDepth = 0.0f;
     	
     	// 바인딩
-    	context->RSSetViewports(1, &viewport);
-    	
-    	
+    	context->RSSetViewports(1, &viewport);    	    	
     }
 
     void Renderer::CreateTransformBuffer()
@@ -296,7 +297,7 @@ namespace Craft
     	// 업데이트 할 데이터 설정
     	std::memcpy(mapped.pData, &cameraData, sizeof(CameraBufferData));
     	
-    	// 버퍼와 연동 해제 
+    	// 버퍼와 연동 해제
     	context->Unmap(cameraBuffer, 0);
-    }
+    }	// Team Escape. 
 }

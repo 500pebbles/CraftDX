@@ -159,6 +159,29 @@ namespace Craft
         return m;
     }
 
+    Matrix4 Matrix4::Perspective(float fieldOfView, float width, float height, float nearDistance, float farDistance)
+    {
+        float d = 1.f / std::tan(fieldOfView * 0.5f * DegreesToRadians); // Focal Length.
+        float aspect = width / height;
+        float sy = d;
+        float sx = sy / aspect;
+        
+        float a = farDistance / (farDistance - nearDistance);
+        float b = -nearDistance * a;        
+        Matrix4 m;
+        m.m00 = sx;	m.m01 = 0.0f; m.m02 = 0.0f;	m.m03 = 0.0f;
+        m.m10 = 0.0f;	m.m11 = sy; m.m12 = 0.0f;	m.m13 = 0.0f;
+        m.m20 = 0.0f;	m.m21 = 0.0f; m.m22 = a;	m.m23 = 1.0f;
+        m.m30 = 0.0f;	m.m31 = 0.0f; m.m32 = b;	m.m33 = 0.0f;
+        return m;
+    }
+
+    Matrix4 Matrix4::InverseTranslationRotation(const Vector3& position, const Vector3& rotation)
+    {
+        // 역변환 행렬 구하기.
+        return Translation(position * -1.0f) * InverseRotation(Rotation(rotation));
+    }
+
     Matrix4& Matrix4::operator=(const Matrix4& other)
     {
         memcpy(elements, other.elements, sizeof(elements));

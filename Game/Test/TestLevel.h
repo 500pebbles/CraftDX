@@ -7,5 +7,4 @@ class TestLevel : public Level
 protected:
     virtual void Initialized() override;
   
-    virtual void Draw() override;
 };

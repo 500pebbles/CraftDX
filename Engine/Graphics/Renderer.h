@@ -28,6 +28,7 @@ namespace Craft
         struct CameraBufferData
         {
             Matrix4 viewMatrix = Matrix4::Identity;
+            Matrix4 projectionMatrix = Matrix4::Identity;
         };
         
     public:
@@ -39,7 +40,7 @@ namespace Craft
         
         void Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const Matrix4& worldMatrix);
         
-        void SubmitCamera(const Matrix4& viewMatrix);
+        void SubmitCamera(const Matrix4& viewMatrix, const Matrix4& projectionMatrix);
         
         void OnResize(uint32_t width, uint32_t height);                // 크기 변경 이벤트 함수
         
@@ -65,7 +66,6 @@ namespace Craft
         
         void CreateCameraBuffer();
         void UpdateCameraBuffer();
-    
         
     private:
         /* 전역접근 */
