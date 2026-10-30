@@ -1,10 +1,11 @@
 ﻿#include "StaticMesh.h"
 
 #include "Renderer.h"
+#include "Vertex.h"
 
 namespace Craft
 {
-    StaticMesh::StaticMesh(const std::vector<Vector3> vertices, const std::vector<uint32_t> indices)
+    StaticMesh::StaticMesh(const std::vector<Vertex> vertices, const std::vector<uint32_t> indices)
     {
         assert(vertices.size() > 0 && indices.size() > 0);
         
@@ -67,16 +68,25 @@ namespace Craft
     std::shared_ptr<StaticMesh> StaticMesh::CreateTriangleMesh()
     {
         return std::make_shared<StaticMesh>(
-            std::vector<Vector3>{ Vector3(0.0f, 0.5f, 0.5f), Vector3(0.5f, -0.5f, 0.5f), Vector3(-0.5f, -0.5f, 0.5f) },
-            std::vector<uint32_t>{ 0, 1, 2}
-            );
+         std::vector<Vertex> {
+             Vertex{ Vector3(0.0f, 0.5f, 0.5f), Vector2(0.5f, 0.0f) },
+             Vertex{ Vector3(0.5f, -0.5f, 0.5f), Vector2(1.0f, 1.0f) },
+             Vertex{ Vector3(-0.5f, -0.5f, 0.5f), Vector2(0.0f, 1.0f) }
+         },
+         std::vector<uint32_t> { 0, 1, 2 }
+     );
     }
 
     std::shared_ptr<StaticMesh> StaticMesh::CreateQuadMesh()
     {
         return std::make_shared<StaticMesh>(
-        std::vector<Vector3>{ Vector3(-0.5f, 0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(0.5f, -0.5f, 0.5f), Vector3(-0.5f, -0.5f, 0.5f) },
-        std::vector<uint32_t>{ 0, 1, 2, 0, 2, 3}
-        );
+         std::vector<Vertex> {
+             Vertex { Vector3(-0.5f, 0.5f, 0.5f), Vector2(0.0f, 0.0f) },
+             Vertex { Vector3(0.5f, 0.5f, 0.5f), Vector2(1.0f, 0.0f) },
+             Vertex { Vector3(0.5f, -0.5f, 0.5f), Vector2(1.0f, 1.0f) },
+             Vertex{ Vector3(-0.5f, -0.5f, 0.5f), Vector2(0.0f, 1.0f) },
+         },
+         std::vector<uint32_t> { 0, 1, 2, 0, 2, 3 }
+     );
     }
 }

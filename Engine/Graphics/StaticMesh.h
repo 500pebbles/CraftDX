@@ -3,15 +3,17 @@
 #include <d3d11.h>
 #include <memory>
 #include <vector>
+#include "Vertex.h"
 
-#include "Math/Vector3.h"
 
 namespace Craft
-{    
+{
+    struct Vertex;
+
     class StaticMesh
     {
     public:
-        StaticMesh(const std::vector<Vector3> vertices, const std::vector<uint32_t> indices);
+        StaticMesh(const std::vector<Vertex> vertices, const std::vector<uint32_t> indices);
         ~StaticMesh();
         
     public:

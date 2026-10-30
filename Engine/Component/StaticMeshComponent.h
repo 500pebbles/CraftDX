@@ -4,6 +4,7 @@
 
 namespace Craft
 {
+    class Texture;
     class Shader;
     class StaticMesh;
 
@@ -19,9 +20,13 @@ namespace Craft
         
         inline void SetShader(const std::shared_ptr<Shader>& newShader) { shader = newShader; }
         
+        inline void SetTexture(const std::shared_ptr<Texture>& newTexture) { texture = newTexture; }
+        
     private:        
         std::shared_ptr<StaticMesh> staticMesh;
         
         std::shared_ptr<Shader> shader;
+        
+        std::shared_ptr<Texture> texture;
     };
 }

@@ -1,7 +1,7 @@
 ﻿#include "Renderer.h"
 #include "Core/Win32Window.h"
 #include "cstdint"
-#include "d3dcompiler.h"
+#include "Texture.h"
 #include "Shader.h"
 #include "StaticMesh.h"
 
@@ -16,6 +16,7 @@ namespace Craft
     	CreateSwapChain(window);	
 		CreateRenderTargetView();
     	CreateViewport(window.GetWidth(), window.GetHeight());
+		CreateDepthStencilView(window.GetWidth(), window.GetHeight());
     	CreateTransformBuffer();
     	CreateCameraBuffer();
     }
@@ -25,13 +26,15 @@ namespace Craft
     	instance = nullptr;
     	
     	SafeRelease(transformBuffer);
-    	SafeRelease(cameraBuffer);     	
+    	SafeRelease(cameraBuffer);    
+    	
+    	SafeRelease(depthStencilBuffer);
+    	SafeRelease(depthStencilView); 	
     	SafeRelease(renderTargetView);
     	
     	SafeRelease(swapChain);
     	SafeRelease(context);	    
     	SafeRelease(device);
-    	
     }
 
     void Renderer::Draw(float red, float green, float blue, uint32_t vsync)
@@ -41,12 +44,13 @@ namespace Craft
     	EndScene(vsync);
     }
 
-    void Renderer::Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const Matrix4& worldMatrix)
+    void Renderer::Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture, const Matrix4& worldMatrix)
     {
     	RenderCommand command;
     	command.worldMatrix = worldMatrix;
     	command.mesh = mesh;
     	command.shader = shader;
+    	command.texture = texture;
     	
     	// 여기에 최종적으로 카메라를 곱해서 만들어야함
     	
@@ -60,13 +64,10 @@ namespace Craft
     }
 
     void Renderer::OnResize(uint32_t width, uint32_t height)
-    {
-    	// 기존 크기 확인
-    	DXGI_SWAP_CHAIN_DESC desc = {};
-    	swapChain->GetDesc(&desc);
-    	
+    {    	
     	// 렌더 타겟 뷰 해제
     	SafeRelease(renderTargetView);
+    	SafeRelease(depthStencilView);
     	
     	// 백버퍼 크기 변경 
 		ThrowIfFailed(swapChain->ResizeBuffers(
@@ -77,8 +78,8 @@ namespace Craft
 			0
 			), L"Failed to resize back buffer");
     	
-    	CreateRenderTargetView();
-    	
+    	CreateRenderTargetView();    
+    	CreateDepthStencilView(width, height);	
     	CreateViewport(width, height);
     }
 
@@ -91,19 +92,24 @@ namespace Craft
     void Renderer::BeginScene(float red, float green, float blue)
     {
     	// 그리기 대상 설정
-    	context->OMSetRenderTargets(1, &renderTargetView, nullptr);
+    	context->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
     	
     	// 배경 지우기
     	const float backgroundColor[4] = {red, green, blue, 1.0f};
     	context->ClearRenderTargetView(renderTargetView, backgroundColor);
+    	
+    	// 뎁스 / 스텐실 값 지우기
+    	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+    	
+    	// 뷰포트 설정
+    	context->RSSetViewports(1, &viewport);
     }
 
     void Renderer::DrawScene()
     {
     	context->VSSetConstantBuffers(0, 1, &transformBuffer); // (레지스터 슬롯번호, 쓸 버퍼개수, 쓸 버퍼)    	
+   	   	UpdateCameraBuffer();
     	context->VSSetConstantBuffers(1, 1, &cameraBuffer);
-    	
-    	UpdateCameraBuffer();
     	
     	for (const RenderCommand& command : renderCommandList)
     	{
@@ -118,6 +124,7 @@ namespace Craft
     	
     	command.mesh->Bind();
     	command.shader->Bind();
+    	if (command.texture) command.texture->Bind(0);
     	
     	UpdateTransformBuffer(command.worldMatrix);
     	
@@ -127,7 +134,7 @@ namespace Craft
     void Renderer::EndScene(uint32_t vsync)
     {
     	// Front - Back 버퍼 교환
-    	swapChain->Present(0, vsync);
+    	swapChain->Present(vsync, 0);
     }
 
     void Renderer::CreateDevices()
@@ -193,7 +200,7 @@ namespace Craft
     		
     	}
     	// 해제
-    	if (!factory)
+    	if (factory)
     	{
     		factory->Release();
     		factory = nullptr;
@@ -215,6 +222,36 @@ namespace Craft
     	
     	// 사용후 메모리 해제
     	SafeRelease(backBuffer);
+    }
+
+    void Renderer::CreateDepthStencilView(uint32_t width, uint32_t height)
+    {
+    	D3D11_TEXTURE2D_DESC depthBufferDesc = {};
+		depthBufferDesc.Width = width;
+    	depthBufferDesc.Height = height;
+    	depthBufferDesc.MipLevels = 1;
+    	depthBufferDesc.ArraySize = 1;    	
+    	depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Depth 24bit / Stencil 8bit.
+    	depthBufferDesc.SampleDesc.Count = 1;
+    	depthBufferDesc.SampleDesc.Quality = 0;
+    	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    	depthBufferDesc.CPUAccessFlags = 0;
+    	depthBufferDesc.MiscFlags = 0;
+    	
+    	ThrowIfFailed(
+    		device->CreateTexture2D(&depthBufferDesc,nullptr,&depthStencilBuffer),
+			L"Failed to create depth stencil buffer");
+    	
+    	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+    	depthStencilViewDesc.Format = depthBufferDesc.Format;
+    	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    	depthStencilViewDesc.Flags = 0;
+    	
+    	ThrowIfFailed(
+    		device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView),
+    		L"Failed to create depth stencil view");
+    	
     }
 
     void Renderer::CreateViewport(uint32_t width, uint32_t height)

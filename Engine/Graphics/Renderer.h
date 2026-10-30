@@ -2,7 +2,6 @@
 
 #include <d3d11.h>  
 #include <memory>
-#include <Core/Core.h>
 #include <cstdint>
 #include <vector>
 
@@ -11,6 +10,7 @@
 
 namespace Craft
 {
+    class Texture;
     class Shader;
     class StaticMesh;
     class Win32Window;
@@ -23,6 +23,7 @@ namespace Craft
             Matrix4 worldMatrix = Matrix4::Identity;
             std::shared_ptr<StaticMesh> mesh;
             std::shared_ptr<Shader> shader;
+            std::shared_ptr<Texture> texture;
         };
         
         struct CameraBufferData
@@ -38,7 +39,7 @@ namespace Craft
     public:
         void Draw(float red, float green, float blue, uint32_t vsync); // Draw함수
         
-        void Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const Matrix4& worldMatrix);
+        void Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture, const Matrix4& worldMatrix);
         
         void SubmitCamera(const Matrix4& viewMatrix, const Matrix4& projectionMatrix);
         
@@ -59,6 +60,7 @@ namespace Craft
         void CreateDevices();                                    // 장치 생성              
         void CreateSwapChain(const Win32Window& window);         // 스왑체인 생성                 
         void CreateRenderTargetView();                           // 렌더 타겟 뷰 생성
+        void CreateDepthStencilView(uint32_t width, uint32_t height);  // 뎁스 텍스쳐 뷰 생성
         void CreateViewport(uint32_t width, uint32_t height);    // 뷰포트 생성
     
         void CreateTransformBuffer();                            // 트랜스폼 상수버퍼 생성        
@@ -84,7 +86,11 @@ namespace Craft
         
         // 백버퍼를 대표하는 렌더 타겟 -> 그래픽카드에 그릴 대상을 선정함 (DX에서 View라는 개념은 메모리에 그릴 대상을 뜻함)
         ID3D11RenderTargetView* renderTargetView = nullptr;
-                
+        
+        ID3D11Texture2D* depthStencilBuffer = nullptr;
+        
+        ID3D11DepthStencilView* depthStencilView = nullptr;
+        
         ID3D11Buffer* transformBuffer = nullptr;
         
         CameraBufferData cameraData;

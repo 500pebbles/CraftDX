@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "GameFramework/Actor.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/Texture.h"
 #include "Math/Transform.h"
 
 namespace Craft
@@ -16,6 +17,6 @@ namespace Craft
         
         const Transform& transform = actor->GetTransform();
         
-        Renderer::Get().Submit(staticMesh, shader, transform.GetWorldMatrix());
+        Renderer::Get().Submit(staticMesh, shader, texture, transform.GetWorldMatrix());
     }
 }

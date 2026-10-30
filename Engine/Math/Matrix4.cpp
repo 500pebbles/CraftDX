@@ -29,7 +29,7 @@ namespace Craft
         std::swap(m.m02, m.m20);
         std::swap(m.m03, m.m30);
         std::swap(m.m12, m.m21);
-        std::swap(m.m13, m.m22);
+        std::swap(m.m13, m.m31);
         std::swap(m.m23, m.m32);
         
         return m;
@@ -160,9 +160,13 @@ namespace Craft
     }
 
     Matrix4 Matrix4::Perspective(float fieldOfView, float width, float height, float nearDistance, float farDistance)
-    {
-        float d = 1.f / std::tan(fieldOfView * 0.5f * DegreesToRadians); // Focal Length.
+    {   
+        assert(fieldOfView > 0.f && fieldOfView < 180.f);
+        assert(width > 0.f && height > 0.f);
+        assert(nearDistance > 0.f && farDistance > nearDistance);
+        
         float aspect = width / height;
+        float d = 1.f / std::tan(fieldOfView * 0.5f * DegreesToRadians); // Focal Length.
         float sy = d;
         float sx = sy / aspect;
         

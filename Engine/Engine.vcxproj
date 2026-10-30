@@ -133,7 +133,7 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
     <PreBuildEvent>
-      <Command>xcopy HLSLShaders\*.hlsl $(OutDir)\HLSLShaders\ /e /y /i</Command>
+      <Command>xcopy ..\Assets\* $(OutDir)\Assets\ /e /y /i</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,7 +159,7 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
     <PreBuildEvent>
-      <Command>xcopy HLSLShaders\*.hlsl $(OutDir)\HLSLShaders\ /e /y /i</Command>
+      <Command>xcopy ..\Assets\* $(OutDir)\Assets\ /e /y /i</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -178,10 +178,13 @@
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\Shader.cpp" />
     <ClCompile Include="Graphics\StaticMesh.cpp" />
+    <ClCompile Include="Graphics\Texture.cpp" />
+    <ClCompile Include="Graphics\Vertex.cpp" />
     <ClCompile Include="Math\Matrix4.cpp" />
     <ClCompile Include="Math\Transform.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
+    <ClCompile Include="ThirdParty\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Component\CameraComponent.h" />
@@ -197,12 +200,15 @@
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\StaticMesh.h" />
+    <ClInclude Include="Graphics\Texture.h" />
+    <ClInclude Include="Graphics\Vertex.h" />
     <ClInclude Include="Interface\IMessageHandler.h" />
     <ClInclude Include="Math\MathDefines.h" />
     <ClInclude Include="Math\Matrix4.h" />
     <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="Math\Vector2.h" />
     <ClInclude Include="Math\Vector3.h" />
+    <ClInclude Include="ThirdParty\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSLShaders\DefaultPS.hlsl">
@@ -217,6 +223,8 @@
       <ShaderType>Pixel</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="HLSLShaders\DefaultVS.hlsl">
       <ObjectFileOutput>C:\Workspace\CraftDX\Bin\Debug\%(Filename).cso</ObjectFileOutput>
@@ -228,6 +236,38 @@
       <DisableOptimizations>true</DisableOptimizations>
       <EnableDebuggingInformation>true</EnableDebuggingInformation>
       <ShaderType>Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="HLSLShaders\YellowPS.hlsl">
+      <ObjectFileOutput>C:\Workspace\CraftDX\Bin\Debug\HLSLShaders\DefaultPS.cso</ObjectFileOutput>
+      <TrackerLogDirectory>C:\Workspace\CraftDX\Intermediate\Debug\Engine\Engine.tlog\</TrackerLogDirectory>
+      <EntryPointName>main</EntryPointName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShaderModel>4.0_level_9_3</ShaderModel>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="HLSLShaders\YellowVS.hlsl">
+      <ObjectFileOutput>C:\Workspace\CraftDX\Bin\Debug\HLSLShaders\DefaultVS.cso</ObjectFileOutput>
+      <TrackerLogDirectory>C:\Workspace\CraftDX\Intermediate\Debug\Engine\Engine.tlog\</TrackerLogDirectory>
+      <EntryPointName>main</EntryPointName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShaderModel>4.0_level_9_3</ShaderModel>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)HLSLShaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
