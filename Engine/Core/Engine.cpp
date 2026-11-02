@@ -4,6 +4,9 @@
 #include "Graphics/Renderer.h"
 #include <iostream>
 
+#include "Graphics/ShaderManager.h"
+#include "Graphics/TextureManager.h"
+
 namespace Craft
 {
     Engine::Engine(uint32_t width, uint32_t height, const std::wstring title)
@@ -13,6 +16,8 @@ namespace Craft
         
         window = std::make_unique<Win32Window>(width, height, this,title);
         renderer = std::make_unique<Renderer>(*window);
+        shaderManager = std::make_unique<ShaderManager>();
+        textureManager = std::make_unique<TextureManager>();
     }
 
     Engine::~Engine()

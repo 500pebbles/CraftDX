@@ -51,3 +51,36 @@ void SafeRelease(T*& t)
         t = nullptr;
     }
 }
+
+/* 전역 접근 가능한 클래스 기능을 제공하는 클래스 탬플릿 */
+template<typename T>
+class TGlobalAccessible
+{
+public:
+	TGlobalAccessible()
+	{
+		assert(!instance);
+		instance = static_cast<T*>(this);
+	}
+	
+	virtual ~TGlobalAccessible()
+	{
+		instance = nullptr;
+	}
+	
+	TGlobalAccessible(const TGlobalAccessible&) = delete;
+	TGlobalAccessible& operator=(const TGlobalAccessible&) = delete;
+	
+	TGlobalAccessible(TGlobalAccessible&& other) = delete;
+	TGlobalAccessible& operator=(TGlobalAccessible&& other) = delete;
+	/*  */
+public:
+	static T& Get()
+	{
+		assert(instance);
+		return *instance;
+	}
+	
+private:
+	inline static T* instance = nullptr;
+};

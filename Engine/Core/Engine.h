@@ -7,6 +7,8 @@
 
 namespace Craft
 {
+    class TextureManager;
+    class ShaderManager;
     class Win32Window;
     class Renderer;
     
@@ -42,7 +44,10 @@ namespace Craft
         std::unique_ptr<Renderer> renderer;
         std::shared_ptr<Level> mainLevel;
         std::shared_ptr<Level> nextLevel;
-                
+        std::unique_ptr<ShaderManager> shaderManager;
+        std::unique_ptr<TextureManager> textureManager;
+
+        
     protected:
         inline static Engine* instance = nullptr;
     

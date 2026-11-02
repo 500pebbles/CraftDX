@@ -58,7 +58,6 @@ namespace Craft
         // DeviceContext Caching.
         auto& context = Renderer::Get().GetContext();
 
-        uint32_t stride = sizeof(float) * 3;
         uint32_t offset = 0;
         context.IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
         context.IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);    	

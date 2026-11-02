@@ -1,6 +1,7 @@
 ﻿#include "Renderer.h"
 #include "Core/Win32Window.h"
 #include "cstdint"
+#include "Material.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "StaticMesh.h"
@@ -44,13 +45,12 @@ namespace Craft
     	EndScene(vsync);
     }
 
-    void Renderer::Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture, const Matrix4& worldMatrix)
+    void Renderer::Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Material>& material, const Matrix4& worldMatrix)
     {
     	RenderCommand command;
     	command.worldMatrix = worldMatrix;
     	command.mesh = mesh;
-    	command.shader = shader;
-    	command.texture = texture;
+    	command.material = material;
     	
     	// 여기에 최종적으로 카메라를 곱해서 만들어야함
     	
@@ -120,11 +120,9 @@ namespace Craft
 
     void Renderer::DrawCommand(const RenderCommand& command)
     {   
-    	if (!command.mesh || !command.shader) return;
+    	if (!command.mesh || !command.material) return;
     	
-    	command.mesh->Bind();
-    	command.shader->Bind();
-    	if (command.texture) command.texture->Bind(0);
+    	command.material->Bind(); // ...and I think it's gonna be a long long time... 
     	
     	UpdateTransformBuffer(command.worldMatrix);
     	

@@ -10,8 +10,7 @@
 
 namespace Craft
 {
-    class Texture;
-    class Shader;
+    class Material;
     class StaticMesh;
     class Win32Window;
     
@@ -22,8 +21,7 @@ namespace Craft
         {
             Matrix4 worldMatrix = Matrix4::Identity;
             std::shared_ptr<StaticMesh> mesh;
-            std::shared_ptr<Shader> shader;
-            std::shared_ptr<Texture> texture;
+            std::shared_ptr<Material> material;
         };
         
         struct CameraBufferData
@@ -39,7 +37,7 @@ namespace Craft
     public:
         void Draw(float red, float green, float blue, uint32_t vsync); // Draw함수
         
-        void Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture, const Matrix4& worldMatrix);
+        void Submit(const std::shared_ptr<StaticMesh>& mesh, const std::shared_ptr<Material>& material, const Matrix4& worldMatrix);
         
         void SubmitCamera(const Matrix4& viewMatrix, const Matrix4& projectionMatrix);
         

@@ -13,10 +13,10 @@ namespace Craft
         Component::Draw();
         
         auto actor = GetOwner();
-        if (!actor || !shader || !staticMesh) return;
+        if (!actor || !material || !staticMesh) return;
         
         const Transform& transform = actor->GetTransform();
         
-        Renderer::Get().Submit(staticMesh, shader, texture, transform.GetWorldMatrix());
+        Renderer::Get().Submit(staticMesh, material, transform.GetWorldMatrix());
     }
 }
